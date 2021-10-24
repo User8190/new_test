@@ -1,6 +1,7 @@
 import time
 
 import bin.zipdownloader,bin.search,telebot,bin.database,bin.keybords,bin.messages
+from bin.zipdownloader import zip.downloader
 from telebot import types
 TOKEN = "2009079618:AAEGX3cvXmhCaJuVj4wWwZc8fA88u_N9br0"
 bot = telebot.TeleBot(TOKEN)
