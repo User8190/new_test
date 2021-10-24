@@ -1,5 +1,8 @@
 import time
 from bin.zipdownloader import download as downloader
+from bin.search import search as search
+from bin.keybords import keybords as keybords
+from bin.database import database as database
 import bin.search,telebot,bin.database,bin.keybords,bin.messages
 from telebot import types
 TOKEN = "2009079618:AAEGX3cvXmhCaJuVj4wWwZc8fA88u_N9br0"
