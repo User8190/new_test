@@ -1,7 +1,7 @@
 import time
 
 import bin.zipdownloader,bin.search,telebot,bin.database,bin.keybords,bin.messages
-from bin.zipdownloader import downloader
+from bin.zipdownloader import download as downloader
 from telebot import types
 TOKEN = "2009079618:AAEGX3cvXmhCaJuVj4wWwZc8fA88u_N9br0"
 bot = telebot.TeleBot(TOKEN)
@@ -110,7 +110,7 @@ def test_callback(call): # <- passes a CallbackQuery type object to your functio
     if message in numbers:
         try:
             n = int(message)
-            url = zipdownloader.download(urls[n])
+            url = downloader(urls[n])
             if url is not None:
                 download_count()
                 caption = "*Download from SinhalaSubDown Bot*😋\n"
