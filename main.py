@@ -366,7 +366,7 @@ def test_callback(call): # <- passes a CallbackQuery type object to your functio
     if message in numbers:
         try:
             n = int(message)
-            url = zipdownloader.download(urls[n])
+            url = download(urls[n])
             if url is not None:
                 download_count()
                 caption = "*Download from SinhalaSubDown Bot*😋\n"
