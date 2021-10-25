@@ -152,5 +152,15 @@ def test_callback(call): # <- passes a CallbackQuery type object to your functio
 def get_filename(message):
     print(message.document.file_name)
 
+    
+    
+def principal():
+    while True:
+        try:
+            bot.polling(True)
+            bot.polling(none_stop=True)
+        except:
+            time.sleep(10)
 
-bot.polling()
+
+principal()
