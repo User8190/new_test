@@ -46,6 +46,8 @@ def welcome(message):
     print(name,"Start the Bot")
     if message.chat.id == admin_chat_id:
         bot.send_message(admin_chat_id,admin_start_message,parse_mode="Markdown")
+    else:
+        bot.send_message(admin_chat_id,"*"+str(name)+"* is started Bot",parse_mode="Markdown")
 
 
 @bot.message_handler(commands=["send_to_admin"])
