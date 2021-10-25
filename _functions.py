@@ -5,33 +5,133 @@ from pymongo import MongoClient
 import telebot
 from telebot import types
 # search
-def search_engine(query):
-    text = query+" site:baiscopelk.com OR site:cineru.lk OR site:piratelk.com 1..15"
-    text = text.replace(" ","+")
+
+
+# search engine
+def did_you(query, other=""):
+    text = query+other
+    text = text.replace(" ", "+")
     url = 'https://google.com/search?q=' + text
     request_result = requests.get(url)
-    soup = bs4.BeautifulSoup(request_result.text,"html.parser")
-    heading_object = soup.find_all('div',{"class":"kCrYT"})
-    titles = []
-    link = []
-    for info in heading_object:
-        try:
-            title = str(info.select("h3"))
-            links = info.select("a")[0]['href']
-            pure_link = links[links.index("https://"):links.index("&sa=U&")]
-
-            if pure_link.count("/") ==4:
-                new_title = title[title.index('AP7Wnd">') + 8:title.index('|')]
-                link.append(pure_link)
-                titles.append(new_title)
-        except Exception as e:
-            pass
-    if not titles:
-        return "Not Result"
+    soup = bs4.BeautifulSoup(request_result.text, "html.parser")
+    did_you_ = ""
+    try:
+        did_you_ = soup.find('div', {'class': 'MUxGbd v0nnCb lyLwlc'})
+        did_you_ = str(did_you_.getText().replace(other, ""))
+        did_you_ = did_you_.replace(":https://www.imdb.com/title", "")
+    except Exception as e:
+        pass
+    if did_you_ is None:
+        search = query
     else:
-        output = {"title": titles, 'link': link}
-        return output
+        search = did_you_
+        search = search.replace("Did you mean: ", "").replace("Showing results for ", "")
+    return search
 
+
+def baiscopelk_search(search):
+    baiscopelk_url = "https://www.baiscopelk.com/?s="
+    url = baiscopelk_url+search
+    request_result = requests.get(url)
+    soup = bs4.BeautifulSoup(request_result.text, "html.parser")
+    site_items = soup.find_all('h2',{"class":"post-box-title"})
+    links = []
+    titles = []
+    for x in range(len(site_items)):
+        if "mega-menu-link" in str(site_items[x]) or "rel=\"bookmark\"" in str(site_items[x]) or "ttip" in str(site_items[x]):
+            pass
+        else:
+            htmldata = str(site_items[x])
+            page_soup1 = bs4.BeautifulSoup(htmldata, "html.parser")
+            hreflink = page_soup1.findAll('a')
+            if len(hreflink) != 0:
+                for key in search.split():
+                    if key in str(hreflink[0].getText().lower()):
+                        title = hreflink[0].getText()
+                        try:
+                            ne_title = title[:title.index(" | ")]
+                        except:
+                            ne_title = title
+                        if ne_title not in titles:
+                            titles.append(ne_title)
+                            links.append(hreflink[0]['href'])
+    return {"title": titles, 'link': links}
+
+
+def pirate_search(search):
+    pirate_url = "https://piratelk.com/?s="
+    url = pirate_url+search
+    request_result = requests.get(url)
+    soup = bs4.BeautifulSoup(request_result.text, "html.parser")
+    site_items = soup.find_all('h2',{"class":"post-box-title"})
+
+    links = []
+    titles = []
+    for x in range(len(site_items)):
+        htmldata = str(site_items[x])
+        page_soup1 = bs4.BeautifulSoup(htmldata, "html.parser")
+        hreflink = page_soup1.findAll('a')
+        if len(hreflink) != 0:
+            for key in search.split():
+                if key in str(hreflink[0].getText().lower()):
+                    title = hreflink[0].getText()
+                    try:
+                        ne_title = title[:title.index(" | ")]
+                    except:
+                        ne_title = title
+                    if ne_title not in titles:
+                        titles.append(ne_title)
+                        links.append(hreflink[0]['href'])
+    return {"title": titles, 'link': links}
+
+
+def cineru_search(search):
+    cineru_url = "https://cineru.lk/?s="
+    url = cineru_url+search
+    request_result = requests.get(url)
+    soup = bs4.BeautifulSoup(request_result.text, "html.parser")
+    site_items = soup.find_all('h2',{"class":"post-box-title"})
+
+    links = []
+    titles = []
+    for x in range(len(site_items)):
+        htmldata = str(site_items[x])
+        page_soup1 = bs4.BeautifulSoup(htmldata, "html.parser")
+        hreflink = page_soup1.findAll('a')
+        if len(hreflink) != 0:
+            for key in search.split():
+                if key in str(hreflink[0].getText().lower()):
+                    title = hreflink[0].getText()
+                    try:
+                        ne_title = title[:title.index(" | ")]
+                    except:
+                        ne_title = title
+                    if ne_title not in titles:
+                        titles.append(ne_title)
+                        links.append(hreflink[0]['href'])
+    return {"title": titles, 'link': links}
+
+
+def search_engine(search):
+    search = search.lower()
+    search = did_you(search," subtitles")
+    search = search.replace("("," ").replace(")"," ")
+    baiscopelk = baiscopelk_search(search)
+    pirate = pirate_search(search)
+    cineru = cineru_search(search)
+    if len(baiscopelk['title'])>3:
+        return baiscopelk
+    elif len(pirate['title'])>3:
+        return pirate
+    elif len(cineru['title'])>3:
+        return cineru
+    else:
+        new_title = baiscopelk['title']+pirate['title']+cineru['title']
+        new_link = baiscopelk['link'] + pirate['link'] + cineru['link']
+        if len(new_title)>0:
+            return  {'title': new_title, 'link': new_link}
+        else:
+            return "Not Result"
 
 # zipdownloader
 def download(url):
@@ -95,18 +195,14 @@ def update_users(details):
     try:
         username = details["username"]
         users.update_one({'_id': _id}, {"$set": {"username": "@" + str(username)}} )
-        print("updated username")
     except Exception as e:
-        print("Not UserName ", e)
         pass
 
     try:
         status = str(details['status'])
         print(status)
         users.update_one({'_id': _id},  {"$set": {'status' : status}})
-        print("updated status")
     except Exception as e:
-        print("Not Status ",e)
         pass
 
 
@@ -214,17 +310,18 @@ def invite_friends():
     return keyboard
 
 
-def rate_us():
-    rate_url = "https://t.me/tlgrmcbot?start=sinhalasubdown_bot-review"
+def join_channel():
+    channel_url = "https://t.me/SinhalaSubDown"
     keyboard = types.InlineKeyboardMarkup(row_width=4)
-    button1 = types.InlineKeyboardButton(text="Share", url=str())
-    button2 = types.InlineKeyboardButton(text="Rate us",url= rate_url)
-    keyboard.add(button1,button2)
+    button2 = types.InlineKeyboardButton(text="Join",url= channel_url)
+    keyboard.add(button2)
     return keyboard
 
-
 # messages
-start = "start message"
+def start(name):
+    start = "Hi %s ,\n*I am Sinhala Sub Down Bot(Beta)🤖*\n\n*උපදෙස් ℹ *\n*🔹 SEARCH 🔎* බට්න් එක ක්ලික් කරලා subtitles ඕන කරන film එකේ හෝ TV series එකේ නම මැසේජ් කරන්න.\n🔹 හරිම search result එක ගන්න ඕන නිසා filter ගොඩක් දාලා තියෙයි. ඒක නිසා සමහර sub හොයන්න ටිකක් වැඩි පුර කාලය වැය වෙයි." \
+            "\n🔹 අදහස් යෝජනා චෝදනා එහෙම තියේ නම් *SEND YOUR COMMENTS ✉* බටන් එක ක්ලික් කරලා එවන්න පුලුවන්.\n🔹 තව දින කීපයකින් කලින් බොට්ට මේ update එක දෙනවා. ඊට පස්සේ මේක වැඩ කරන්නෙ නෑ."%name
+    return start
 query_error = "*Something Wrong!*🚫 \n`Reported to admin`"
 download_error = "*Can't Found This Subtitle.*⚠️\nplease try to download other"
 
@@ -237,3 +334,4 @@ rate = 'Type: Bot\n'\
         'Rating URL: https://t.me/tlgrmcbot?start=sinhalasubdown_bot-review\n'
 
 admin_start_message = "*This message show only Admins*\n▪️ /admin\_on - Turn on Admin mode\n▪️ /admin\_off - Turn off Admin mode"
+
