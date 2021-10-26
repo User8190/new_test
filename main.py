@@ -14,7 +14,7 @@ admin_chat_id = 1376213565
 output_data = ""
 share_with_all = ""
 send_user = ""
-
+user_chat_id = ""
 
 # send users
 def send_to_users(message):
@@ -247,30 +247,21 @@ def test_callback(call):  # <- passes a CallbackQuery type object to your functi
     if message in numbers:
         user_folder_name = 'downloads/'+str(call.message.chat.id)+"/"
         try:
-            try:
-                os.mkdir(user_folder_name)
-            except:
-                pass
             from _functions import download
             n = int(message)
             urls = urls
             url = download(urls[n],user_folder_name)
             print(url)
             if url is not None:
+                bot.send_document(call.message.chat.id, url["file"], caption='\nThis File Download from sinhalasubdown_bot')
                 download_count()
-                caption = "*Download from SinhalaSubDown Bot*😊\n"
-                for i in url:
-                    doc = open(i, 'rb')
-                    bot.send_document(call.message.chat.id, doc, caption='\nThis File Download from @sinhalasubdown_bot')
-                    doc.close()
-                    try:
-                        path = user_folder_name
-                        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-                        shutil.rmtree(path, ignore_errors=False)
-                        print("Folder Removed")
-                    except Exception as e:
-                        print(e)
-                        print("Folder Was removed")
+                try:
+                    url["file"].close()
+                    os.remove(url['name'])
+                    print("file deleted")
+                except:
+                    print("file not found")
+
             else:
                 msg = download_error
                 bot.send_message(call.message.chat.id, msg, parse_mode="Markdown")
@@ -309,7 +300,8 @@ def media(message):
 
 
 
-    
+
+
 def principal():
     while True:
         try:
@@ -317,6 +309,5 @@ def principal():
             bot.polling(none_stop=True)
         except:
             time.sleep(10)
-
 
 principal()
