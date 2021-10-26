@@ -4,6 +4,10 @@ import requests
 from pymongo import MongoClient
 import telebot
 from telebot import types
+import rarfile
+from zipfile import ZipFile
+import os
+
 # search
 
 
@@ -134,7 +138,7 @@ def search_engine(search):
             return "Not Result"
 
 # zipdownloader
-def download(url):
+def download(url,path):
     r1 = requests.get(url)
     html_data = r1.text
     soup = bs(html_data, 'html.parser')
@@ -179,15 +183,33 @@ def download(url):
         site_message = baiscopelk()
     else:
         site_message = piratelk()
-    return site_message
+    r3 = requests.get(site_message)
+
+    if r3.status_code == 200:
+        if "rar" in site_message:
+            sv = path+"download_from_@sinhalasubdown_bot.rar"
+        else:
+            sv = path+"download_from_@sinhalasubdown_bot.zip"
+        file = open(sv, "wb")
+        file.write(r3.content)
+        file.close()
+        print("File download success !")
+        return unzip(sv,path)
 
 
-#database
+# database
 client = MongoClient("mongodb+srv://GavinduTharaka:Gavindu123@sinhalasubdownbot.1v9ix.mongodb.net/Bot?retryWrites"
                      "=true&w=majority")
 db = client["Bot"]
 users = db['All_users']
 counts = db['counts']
+
+
+def all_user_details():
+    user_list = []
+    for i in users.find():
+        user_list.append(i)
+    return user_list
 
 
 def update_users(details):
@@ -200,7 +222,6 @@ def update_users(details):
 
     try:
         status = str(details['status'])
-        print(status)
         users.update_one({'_id': _id},  {"$set": {'status' : status}})
     except Exception as e:
         pass
@@ -242,11 +263,13 @@ def all_users():
         _id = []
         status = []
         username = []
+        name = []
         for i in data:
             _id.append(i["_id"])
             username.append(i["username"])
             status.append(i["status"])
-        output = {"_id": _id, "username": username, "status": status}
+            name.append(i['name'])
+        output = {"_id": _id, "username": username, "status": status, 'name': name}
         return output
 
     except:
@@ -273,6 +296,10 @@ def active_user_count():
         pass
 
 
+def user_info_database(user_id):
+    user = db.All_users.find({"_id": user_id})
+    for us in user:
+        return us
 # keyboards
 def start_key():
     keyboard = telebot.types.ReplyKeyboardMarkup(True)
@@ -317,6 +344,16 @@ def join_channel():
     keyboard.add(button2)
     return keyboard
 
+
+def user_info():
+    keyboard = types.InlineKeyboardMarkup(row_width=4)
+    button1 = types.InlineKeyboardButton(text="Send Message", callback_data="send_message")
+    button2 = types.InlineKeyboardButton(text="User Downloads", callback_data="downloads")
+    button3 = types.InlineKeyboardButton(text="Messages",callback_data="messages")
+    keyboard.add(button1,button2)
+    keyboard.add(button3)
+    return keyboard
+
 # messages
 def start(name):
     start = "Hi %s ,\n*I am Sinhala Sub Down Bot(Beta)🤖*\n\n*උපදෙස් ℹ *\n*🔹 SEARCH 🔎* බට්න් එක ක්ලික් කරලා subtitles ඕන කරන film එකේ හෝ TV series එකේ නම මැසේජ් කරන්න.\n🔹 හරිම search result එක ගන්න ඕන නිසා filter ගොඩක් දාලා තියෙයි. ඒක නිසා සමහර sub හොයන්න ටිකක් වැඩි පුර කාලය වැය වෙයි." \
@@ -333,5 +370,59 @@ rate = 'Type: Bot\n'\
         'Menu URL: https://t.me/tlgrmcbot?start=sinhalasubdown_bot\n'\
         'Rating URL: https://t.me/tlgrmcbot?start=sinhalasubdown_bot-review\n'
 
-admin_start_message = "*This message show only Admins*\n▪️ /admin\_on - Turn on Admin mode\n▪️ /admin\_off - Turn off Admin mode"
+admin_start_message = "*This message show only Admins*\n▪️ /admin\_on - Turn on Admin mode"
 
+admin_commands ="*Admin Commands*\n/send\_all - Share messages with all users\n/user\_list - To get all users name and chat id\n" \
+                "/user <user id> - To send privet message and get other details"
+
+
+# Unzip
+def unzip(file_path,path):
+    if '.rar' in file_path:
+        r = rarfile.RarFile(file_path)
+        r.extract(path=path)
+        r.close()
+    elif '.zip' in file_path:
+        z = ZipFile(file_path, 'r')
+        z.extractall(path=path)
+        z.close()
+    file_list = []
+    for path, subdirs, files in os.walk("downloads/"):
+        for name in files:
+            file = str(os.path.join(path, name))
+            file = file.replace("\\","/")
+            if ".zip" not in file and ".htm" not in file and ".html" not in file and ".txt" not in file:
+                file_list.append(file)
+    return file_list
+
+
+def send(userid, message, bot, type = None):
+    caption = ""
+    if str(message.caption) is not None:
+        caption = ""
+    if message.content_type == "text":
+        en = message.entities
+        bot.send_message(userid, message.text, entities=en)
+    else:
+        en = message.caption_entities
+        try:
+            bot.send_photo(userid, message.photo[0].file_id, caption, caption_entities=en)
+        except Exception as e:
+            try:
+                bot.send_document(userid, message.document.file_id, caption=caption, caption_entities=en)
+            except Exception as e:
+                try:
+                    bot.send_video(userid, message.video.file_id, caption=caption, caption_entities=en)
+                except Exception as e:
+                    try:
+                        bot.forward_message(userid, message.chat.id, message.id)
+                    except:
+                        return "error"
+
+"""for user in db.All_users.find():
+    _id = user['_id']
+    users.update_one({'_id': _id}, {"$set": {"name": "Name"}})
+    users.update_one({'_id': _id}, {"$set": {"down_count": "D Count"}})
+    users.update_one({'_id': _id}, {"$set": {"last_seen": "Last seen"}})
+print("update finished")
+"""
