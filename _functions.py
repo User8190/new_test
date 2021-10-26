@@ -370,7 +370,7 @@ rate = 'Type: Bot\n'\
         'Menu URL: https://t.me/tlgrmcbot?start=sinhalasubdown_bot\n'\
         'Rating URL: https://t.me/tlgrmcbot?start=sinhalasubdown_bot-review\n'
 
-admin_start_message = "*This message show only Admins*\n▪️ /admin\_on - Turn on Admin mode"
+admin_start_message = "*This message show only Admins*\n▪️ /admin - Admin Commands here"
 
 admin_commands ="*Admin Commands*\n/send\_all - Share messages with all users\n/user\_list - To get all users name and chat id\n" \
                 "/user <user id> - To send privet message and get other details"
