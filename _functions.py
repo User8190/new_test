@@ -123,12 +123,12 @@ def search_engine(search):
     baiscopelk = baiscopelk_search(search)
     pirate = pirate_search(search)
     cineru = cineru_search(search)
-    if len(baiscopelk['title'])>3:
-        return baiscopelk
+    if len(cineru['title'])>3:
+        return cineru
     elif len(pirate['title'])>3:
         return pirate
-    elif len(cineru['title'])>3:
-        return cineru
+    elif len(baiscopelk['title'])>3:
+        return baiscopelk
     else:
         new_title = baiscopelk['title']+pirate['title']+cineru['title']
         new_link = baiscopelk['link'] + pirate['link'] + cineru['link']
@@ -186,15 +186,23 @@ def download(url,path):
     r3 = requests.get(site_message)
 
     if r3.status_code == 200:
-        if "rar" in site_message:
-            sv = path+"download_from_@sinhalasubdown_bot.rar"
+        if "rar/" in site_message:
+            sv = str(site_message)
+            for fi in sites:
+                sv = sv.replace(fi,"")
+            sv = sv.replace("/","")
+            file_name = sv+".rar"
+            file = open(file_name, "wb")
+            file.write(r3.content)
+            file.close()
+            print("File download success !")
+            print(file_name)
+            doc = open(file_name, 'rb')
+            return {'file': doc ,"name":file_name}
+
         else:
-            sv = path+"download_from_@sinhalasubdown_bot.zip"
-        file = open(sv, "wb")
-        file.write(r3.content)
-        file.close()
-        print("File download success !")
-        return unzip(sv,path)
+            sv = site_message
+            return {'file': sv}
 
 
 # database
