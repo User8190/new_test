@@ -7,4 +7,3 @@ pymongo[srv]
 requests_html
 rarfile~=4.0
 pytest-shutil
-os
