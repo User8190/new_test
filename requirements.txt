@@ -1,7 +1,10 @@
 requests~=2.20.1
 bs4~=0.0.1
 beautifulsoup4~=4.9.3
-colorama~=0.4.4
+zipfile38
 pytelegrambotapi
 pymongo[srv]
 requests_html
+rarfile~=4.0
+pytest-shutil
+os
