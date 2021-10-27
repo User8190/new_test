@@ -7,7 +7,7 @@ import os
 import stat
 
 
-TOKEN = "2019524542:AAGBsxh0_NbaLcWCInBDzOAIqEorE6Wal9w"
+TOKEN = "2019524542:AAFJuxb__HD8_CSuoPhjOpsjllikEw-Btfc"
 bot = telebot.TeleBot(TOKEN)
 
 admin_chat_id = 1376213565
